@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>推理模型的 Token 陷阱：為什麼「會思考」反而交不出答案｜Agent 工程筆記</title>
-  <meta name="description" content="工具全部成功，Agent 最後卻交出空回答？本文從推理 Token、輸出上限、Ollama 設定與原始回應逐步定位問題。">
+  <title>推理模型的 token 陷阱：為什麼「會思考」反而交不出答案｜Agent 工程筆記</title>
+  <meta name="description" content="工具全部成功，agent 最後卻交出空回答？本文從推理 token、輸出上限、Ollama 設定與原始回應逐步定位問題。">
   <meta name="robots" content="index,follow">
   <meta name="theme-color" content="#004a3f">
   <link rel="canonical" href="https://littlecloud891117-tech.github.io/agent-engineering-notes/posts/reasoning-token-trap/">
   <link rel="alternate" type="application/rss+xml" title="Agent 工程筆記" href="https://littlecloud891117-tech.github.io/agent-engineering-notes/feed.xml">
   <link rel="stylesheet" href="/agent-engineering-notes/assets/styles.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "推理模型的 Token 陷阱：為什麼「會思考」反而交不出答案", "description": "工具全部成功，Agent 最後卻交出空回答？本文從推理 Token、輸出上限、Ollama 設定與原始回應逐步定位問題。", "datePublished": "2026-08-21", "dateModified": "2026-08-20", "inLanguage": "zh-Hant", "author": {"@type": "Person", "name": "LittleCloud"}, "mainEntityOfPage": "https://littlecloud891117-tech.github.io/agent-engineering-notes/posts/reasoning-token-trap/", "keywords": ["推理模型", "Token 預算", "AI Agent", "Ollama", "nanobot"]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "推理模型的 token 陷阱：為什麼「會思考」反而交不出答案", "description": "工具全部成功，agent 最後卻交出空回答？本文從推理 token、輸出上限、Ollama 設定與原始回應逐步定位問題。", "datePublished": "2026-08-21", "dateModified": "2026-08-21", "inLanguage": "zh-Hant", "author": {"@type": "Person", "name": "LittleCloud"}, "mainEntityOfPage": "https://littlecloud891117-tech.github.io/agent-engineering-notes/posts/reasoning-token-trap/", "keywords": ["推理模型", "token 預算", "AI agent", "Ollama", "nanobot"]}</script>
 </head>
 <body>
 <a class="skip-link" href="#main">跳到主要內容</a>
@@ -22,21 +22,21 @@
 </header>
 <main id="main"><header class="article-header">
   <p class="eyebrow">FIELD NOTE / 2026 年 8 月 21 日</p>
-  <h1>推理模型的 Token 陷阱：為什麼「會思考」反而交不出答案</h1>
-  <p class="article-dek">工具全部成功，Agent 最後卻交出空回答？本文從推理 Token、輸出上限、Ollama 設定與原始回應逐步定位問題。</p>
-  <div class="article-meta"><span>作者：LittleCloud</span><span>閱讀時間：約 11 分鐘</span><span>更新：2026 年 8 月 20 日</span></div>
-  <ul class="tag-list" aria-label="文章標籤"><li class="tag">推理模型</li><li class="tag">Token 預算</li><li class="tag">AI Agent</li><li class="tag">Ollama</li><li class="tag">nanobot</li></ul>
+  <h1>推理模型的 token 陷阱：為什麼「會思考」反而交不出答案</h1>
+  <p class="article-dek">工具全部成功，agent 最後卻交出空回答？本文從推理 token、輸出上限、Ollama 設定與原始回應逐步定位問題。</p>
+  <div class="article-meta"><span>作者：LittleCloud</span><span>閱讀時間：約 11 分鐘</span><span>更新：2026 年 8 月 21 日</span></div>
+  <ul class="tag-list" aria-label="文章標籤"><li class="tag">推理模型</li><li class="tag">token 預算</li><li class="tag">AI agent</li><li class="tag">Ollama</li><li class="tag">nanobot</li></ul>
 </header>
-<article class="prose" data-source-sha256="1fbe356cb1611d88f131a388b54e28773e67cb4de681069ea52f38fb6ffc7315"><p>本機 agent 換上推理模型後，最令人困惑的故障之一，不是回答品質變差，也不是工具呼叫失敗，而是：工具都跑完了，檔案卻是空的。</p>
+<article class="prose" data-source-sha256="56e6381b91b8a276de355dedacd2b038af33db2cc20511f552d207c5e57a5af3"><p>本機 agent 換上推理模型後，最令人困惑的故障之一，不是回答品質變差，也不是工具呼叫失敗，而是：工具都跑完了，檔案卻是空的。</p>
 <p>這種問題很容易被誤判。你可能以為是寫檔權限、路徑、skill 指令或 agent loop 出錯；但真正的故障點可能更早：模型把輸出預算耗在推理階段，還沒產生最終回答就結束了。</p>
 <h2>症狀：工具成功，產出卻是空的</h2>
 <p>典型場景如下：</p>
 <ol>
-<li>agent 收到一個生產任務，例如產生文章、修改檔案或整理資料。</li>
+<li>agent 收到一個產品製作要求，例如產生文章、修改檔案或整理資料。</li>
 <li>模型正常規劃步驟。</li>
 <li>工具呼叫成功，搜尋、讀檔或查詢都完成。</li>
 <li>最後應該輸出正式內容時，agent 卻回傳空字串或 fallback 訊息。</li>
-<li>執行器因此建立零位元組檔案，或根本沒有可寫入的內容。</li>
+<li>結果可能留下零位元組檔案，或根本沒有可寫入的內容。</li>
 </ol>
 <p>最具誤導性的地方是：<strong>前面的工具步驟看起來全部正常。</strong></p>
 <p>因此，工程師常會優先檢查：</p>
@@ -48,9 +48,9 @@
 <li>agent 是否漏掉最後一個步驟。</li>
 </ul>
 <p>這些檢查都合理，但如果模型使用推理模式，還必須多檢查一件事：<strong>模型是否在產生最終回答之前，就耗盡了可生成的 token。</strong></p>
-<p>在本機 nanobot 0.3.0 的程式碼中，當 agent 已完成工具步驟，卻沒有可交付的最終文字時，runtime 會使用 <code>I completed the tool steps but couldn't produce a final answer.</code> 這類 fallback 訊息。這能說明訊息來源，但單憑 fallback 本身，不能判定唯一根因；仍需搭配 API 回應中的 <code>finish_reason</code>、token 計數與原始內容診斷。</p>
+<p>在本機 nanobot 0.3.0 中，模型回應經清理後若仍為空，runtime 會先重試，接著要求模型完成最終回答。若結果仍空且不是模型錯誤，runner 才使用 <code>I completed the tool steps but couldn't produce a final answer. Please try again or narrow the task.</code>。這段 fallback 不能證明工具已完成，也不能判定唯一根因。仍須檢查 API 回應的終止原因、token 計數與原始內容，才能診斷。</p>
 <h2>根因：推理內容與最終回答共用生成預算</h2>
-<p>推理模型的輸出通常可以概念化為兩部分：</p>
+<p>推理模型的輸出通常可分成兩部分：</p>
 <pre><code class="language-text">reasoning tokens + final answer tokens
 </code></pre>
 <p>不同 API 可能把推理內容放在 <code>reasoning</code>、<code>reasoning_content</code>、<code>thinking</code>，或以特殊標記包在 <code>content</code> 內。欄位形式雖不同，關鍵問題相同：<strong>推理內容會消耗模型的生成預算。</strong></p>
@@ -64,7 +64,7 @@
 </code></pre>
 <p>API 可能回傳：</p>
 <ul>
-<li>大量 reasoning；</li>
+<li>大量推理內容；</li>
 <li>空的 <code>content</code>；</li>
 <li><code>finish_reason: &quot;length&quot;</code> 或等價的長度終止訊號。</li>
 </ul>
@@ -82,38 +82,32 @@
 <li>最終回答。</li>
 </ul>
 <p>工具完成後，模型還必須把整個狀態重新整合成正式產出。這通常正是推理最密集的階段。</p>
-<p>如果任務要求的最終產出本身很長，例如完整文章、程式碼檔或結構化報告，風險更高。模型不只要保留回答空間，還要保留足夠長的回答空間。</p>
+<p>如果任務要求的最終產出本身很長，例如完整文章、程式碼檔或結構化報告，風險更高。模型不只要預留回答空間，空間也必須足以容納完整回答。</p>
 <h2>最容易混淆的兩個限制</h2>
-<p>這類問題常被籠統稱為「context 不夠」，但至少要區分兩種限制。</p>
-<h3>1. 上下文視窗</h3>
-<p>上下文視窗限制的是：</p>
-<pre><code class="language-text">輸入 tokens + 已生成 tokens
-</code></pre>
-<p>輸入包含 system prompt、歷史對話、工具 schema 與工具結果。視窗太小時，常見症狀包括：</p>
+<p>這類問題常被籠統稱為「Context 長度不足」，但至少要區分兩種限制。</p>
+<h3>1. Context 長度</h3>
+<p>Context 長度限制模型在生成期間可同時存取的 token 數。輸入內容與已生成內容都會占用這個空間，但實際保留方式取決於端點與截斷策略。</p>
+<p>輸入包含 system prompt、歷史對話、工具 schema 與工具結果。Context 長度太小時，常見症狀包括：</p>
 <ul>
 <li>請求在送出前就超過限制；</li>
 <li>舊訊息被截斷；</li>
 <li>工具結果被裁切；</li>
 <li>模型遺失前文；</li>
-<li>API 回報 context length 錯誤。</li>
+<li>API 回報 Context 長度錯誤。</li>
 </ul>
-<p>Ollama 現行 FAQ 列出的預設 context window 是 4,096 tokens。可以透過 <code>OLLAMA_CONTEXT_LENGTH</code>、Modelfile 的 <code>num_ctx</code>，或原生 API 的 <code>options.num_ctx</code> 調整。對 agent 工作負載，應明確設定需求值，並以 runtime 的實際配置為準。</p>
+<p>Ollama 的 FAQ 仍列出 4,096 tokens。新版 Context length 專頁則依 VRAM 列出 4K、32K 或 256K 的預設值。可以透過 <code>OLLAMA_CONTEXT_LENGTH</code>、Modelfile 的 <code>num_ctx</code>，或原生 API 的 <code>options.num_ctx</code> 調整。診斷時應以 <code>ollama ps</code> 的實際 <code>CONTEXT</code> 為準。</p>
 <h3>2. 輸出 token 上限</h3>
 <p>輸出上限限制的是：</p>
 <pre><code class="language-text">模型本次最多能生成多少 tokens
 </code></pre>
-<p>在 OpenAI 相容 API 中，常見參數名稱是：</p>
-<ul>
-<li><code>max_tokens</code>；</li>
-<li><code>max_completion_tokens</code>。</li>
-</ul>
-<p>推理模型可能把 reasoning 與最終回答一起計入生成量。於是即使上下文視窗很大，仍可能發生：</p>
+<p>不同 OpenAI 相容 Provider 可能使用 <code>max_tokens</code> 或 <code>max_completion_tokens</code>。Ollama 0.30.6 的 <code>/v1/chat/completions</code> 使用 <code>max_tokens</code>，並在內部映射成 <code>num_predict</code>。</p>
+<p>推理模型可能把推理內容與最終回答一起計入生成量。於是即使 Context 長度很大，仍可能發生：</p>
 <pre><code class="language-text">輸入放得下
 工具結果也放得下
 但推理先吃完輸出上限
 最終回答仍然是空的
 </code></pre>
-<p>因此，即使 context window 很大，final answer 仍可能沒有足夠空間。</p>
+<p>因此，即使 Context 長度很大，最終回答仍可能沒有足夠空間。</p>
 <h2><code>strip_think()</code> 只能處理標記，不能解決所有推理欄位</h2>
 <p>很多 agent 會在輸出前做清理，例如：</p>
 <pre><code class="language-python">content = strip_think(response.content)
@@ -122,15 +116,15 @@
 <pre><code class="language-text">&lt;think&gt;...&lt;/think&gt;
 </code></pre>
 <p>本機 nanobot 0.3.0 的 <code>nanobot/utils/helpers.py</code> 中，<code>strip_think()</code> 會處理 <code>&lt;think&gt;</code>、<code>&lt;thinking&gt;</code>、<code>&lt;thought&gt;</code>、未閉合標記及部分串流控制標記。</p>
-<p>但如果 provider 把推理放在獨立欄位，例如：</p>
+<p>但如果 Provider 把推理內容放在獨立欄位，例如：</p>
 <pre><code class="language-json">{
   &quot;reasoning_content&quot;: &quot;...&quot;,
   &quot;content&quot;: &quot;&quot;
 }
 </code></pre>
 <p>那麼 <code>strip_think(response.content)</code> 沒有內容可清理，也無法把 <code>reasoning_content</code> 轉換成最終回答。</p>
-<p>即使推理內容放在 <code>&lt;think&gt;</code> 標記中，清掉標記也只是隱藏文字，並不會歸還已消耗的 token。</p>
-<h2>設定名稱不等於 provider 實際行為</h2>
+<p>即使推理內容放在 <code>&lt;think&gt;</code> 標記中，清掉標記也只是隱藏文字，並不會取回已消耗的 token 預算。</p>
+<h2>設定名稱不等於 Provider 實際行為</h2>
 <p>另一個常見陷阱，是把設定檔中的欄位名稱直接當成 API 保證。</p>
 <p>例如設定看起來像：</p>
 <pre><code class="language-json">{
@@ -139,44 +133,44 @@
 </code></pre>
 <p>但它是否有效，取決於完整轉換鏈：</p>
 <pre><code class="language-text">設定欄位
-→ nanobot provider 轉換
+→ nanobot Provider 轉換
 → LiteLLM 或其他 client 參數
 → OpenAI 相容請求
 → Ollama 相容層
 → 模型模板與模型能力
 </code></pre>
-<p>其中任何一層沒有轉送、映射錯誤或不支援該值，設定就可能沒有預期效果。</p>
-<p>以目前 Ollama 官方 OpenAI 相容文件為準，<code>/v1/chat/completions</code> 的 <code>reasoning_effort</code> 支援 <code>low</code>、<code>medium</code>、<code>high</code>、<code>max</code> 與 <code>none</code>。Ollama 原生 <code>/api/chat</code> 使用 <code>think</code>；該欄位可為布林值，部分模型也支援強度字串。其他 provider 與模型仍可能使用不同參數或值域。</p>
+<p>其中任何一層若未轉送該欄位、錯誤映射該欄位，或不支援該值，設定都可能失效。</p>
+<p>以目前 Ollama 官方 OpenAI 相容文件為準，<code>/v1/chat/completions</code> 的 <code>reasoning_effort</code> 支援 <code>low</code>、<code>medium</code>、<code>high</code>、<code>max</code> 與 <code>none</code>。Ollama 原生 <code>/api/chat</code> 使用 <code>think</code>；該欄位可為布林值，部分模型也支援強度字串。其他 Provider 與模型仍可能使用不同參數或值域。</p>
 <p>因此，若目標是停用推理，不要只看設定名稱。應確認：</p>
 <ol>
 <li>nanobot 是否真的把欄位送進請求；</li>
 <li>送出的 JSON 鍵名和值是什麼；</li>
 <li>Ollama 端點是否支援該參數；</li>
 <li>目標模型是否允許停用推理；</li>
-<li>回應中是否仍有 <code>reasoning</code>、<code>reasoning_content</code> 或 <code>thinking</code>。</li>
+<li>回應中是否仍有 <code>reasoning</code>、<code>reasoning_content</code> 或 <code>thinking</code> 欄位。</li>
 </ol>
-<p>在本機 nanobot 0.3.0 的 <code>openai_compat_provider.py</code> 中，Qwen thinking 模型另有 <code>enable_thinking</code>／provider-specific <code>extra_body</code> 處理。這代表「停用推理」是實作與模型相關行為，不能只靠抽象的 <code>reasoningEffort: none</code> 推論。</p>
+<p>在本機 nanobot 0.3.0 的 <code>openai_compat_provider.py</code> 中，部分 Qwen 模型另有 <code>enable_thinking</code>／Provider 專用 <code>extra_body</code> 處理。這代表「停用推理」是實作與模型相關行為，不能只靠抽象的 <code>reasoningEffort: none</code> 推論。</p>
 <h2>記憶體估算：不能只看參數量</h2>
-<p>調大 context 或輸出上限會增加資源成本。對本機推論而言，至少要考慮：</p>
+<p>Context 長度越大，記憶體需求越高。提高輸出上限則可能增加推論時間與資源用量。對本機推論而言，至少要考慮：</p>
 <ul>
 <li>模型權重；</li>
 <li>KV cache；</li>
 <li>runtime buffer；</li>
 <li>GPU 或 CPU offload；</li>
 <li>量化格式；</li>
-<li>context length；</li>
+<li>Context 長度；</li>
 <li>batch size；</li>
 <li>同時請求數。</li>
 </ul>
-<p>只以「參數量 × 每參數位元數」估算，最多只能粗估量化權重下限。例如 9B 模型若以理想化 4-bit 計算，原始權重資料約為：</p>
+<p>只以「參數量 × 每參數位元數」計算，最多只能粗估量化權重下限。例如 9B 模型若以理想化 4-bit 估算，原始權重資料約為：</p>
 <pre><code class="language-text">9,000,000,000 × 4 bits ≈ 4.5 GB
 </code></pre>
-<p>但實際模型檔會有量化 metadata、不同 tensor 精度與其他開銷；載入後還要加上 KV cache 和 runtime 配置。因此不能由「9B、4-bit」直接推導出固定的 14 GB VRAM 結論，也不能把 context 調大視為免費。</p>
+<p>但實際模型檔會有量化 metadata、不同 tensor 精度與其他開銷；載入後還要加上 KV cache 和 runtime 配置。因此不能由「9B、4-bit」直接推導出固定的 14 GB VRAM 結論，也不能認為增加 Context 長度沒有成本。</p>
 <p>較可靠的方法是：</p>
 <ol>
 <li>用 <code>ollama show &lt;model&gt;</code> 確認模型與量化資訊；</li>
-<li>用 <code>ollama ps</code> 查看實際載入、processor 分配與 context；</li>
-<li>在目標 context 下量測 VRAM／RAM；</li>
+<li>用 <code>ollama ps</code> 查看實際載入狀態、<code>PROCESSOR</code> 與 <code>CONTEXT</code>；</li>
+<li>在目標 Context 長度下量測 VRAM／RAM；</li>
 <li>再逐步增加 <code>num_ctx</code> 或輸出上限。</li>
 </ol>
 <h2>如何選擇修法</h2>
@@ -197,26 +191,26 @@
 <tr>
 <td>任務需要推理，且硬體仍有容量</td>
 <td>增加輸出上限</td>
-<td>容量增加不保證 final answer 取得固定比例</td>
+<td>容量增加不保證最終回答取得固定比例</td>
 </tr>
 <tr>
 <td>推理成本高於品質收益</td>
-<td>對該 process 改用非推理模型</td>
+<td>對該 Process 改用非推理模型</td>
 <td>需要用同一案例比較品質</td>
 </tr>
 </tbody>
 </table>
-<p>OpenAI 相容層不保證接受 Ollama 原生 API 的 <code>think: false</code>。設定完成後，應比較實際請求與回應，確認 reasoning 確實下降。</p>
+<p>OpenAI 相容層不保證接受 Ollama 原生 API 的 <code>think: false</code>。設定完成後，應比較實際請求與回應，確認推理 token 用量確實下降。</p>
 <h2>建議的診斷順序</h2>
 <p>遇到「工具成功但最後輸出為空」時，依序取得以下證據：</p>
 <ol>
-<li>保存原始 provider 回應中的 <code>content</code>、reasoning 欄位、終止原因與 token 計數。</li>
-<li>核對 client 最後送出的 <code>max_tokens</code> 或 <code>max_completion_tokens</code>。</li>
-<li>用 <code>OLLAMA_CONTEXT_LENGTH</code>、<code>num_ctx</code> 與 <code>ollama ps</code> 確認 runtime 的實際 context。</li>
+<li>保存原始 Provider 回應中的 <code>content</code>、推理欄位、終止原因與 token 計數。</li>
+<li>核對 client 最後送出的輸出限制。對 Ollama 0.30.6 的 <code>/v1/chat/completions</code>，檢查 <code>max_tokens</code>。</li>
+<li>用 <code>OLLAMA_CONTEXT_LENGTH</code>、<code>num_ctx</code> 與 <code>ollama ps</code> 確認 runtime 的實際 <code>CONTEXT</code>。</li>
 <li>使用同一個 prompt 比較目前設定與降低推理後的結果。</li>
-<li>結果仍不清楚時，移除 agent loop，直接呼叫 provider。</li>
+<li>結果仍不清楚時，移除 agent loop，直接呼叫 Provider。</li>
 </ol>
-<p>長 reasoning、空 <code>content</code> 與長度終止訊號同時出現時，可優先調查生成預算。若降低推理後 <code>content</code> 恢復，才能確認控制參數有效。直接呼叫 provider 則能把模型或 provider 問題與 agent runtime 問題分開。</p>
+<p>大量推理內容、空 <code>content</code> 與長度終止訊號同時出現時，可優先調查生成預算。若降低推理後 <code>content</code> 恢復，才能確認控制參數有效。直接呼叫 Provider 則能把模型或 Provider 問題與 agent runtime 問題分開。</p>
 <h2>可觀測性：不要再讓空回答像寫檔錯誤</h2>
 <p>生產型 agent 至少應記錄以下欄位：</p>
 <pre><code class="language-json">{
@@ -230,7 +224,7 @@
 }
 </code></pre>
 <p>告警條件可使用 <code>content_length == 0 AND tool_call_count &gt; 0 AND finish_reason == &quot;length&quot;</code>。條件成立時，先把事件分類為「疑似生成預算耗盡」。</p>
-<p>如果 provider 不提供 reasoning token 數，也可以記錄 reasoning 欄位的字元長度，至少能作為趨勢指標。</p>
+<p>如果 Provider 不提供推理 token 數，也可以記錄推理欄位的字元長度，至少能作為趨勢指標。</p>
 <p>另外，agent runtime 應把下列情況分開：</p>
 <pre><code class="language-text">模型回傳空 content
 模型請求失敗
@@ -240,11 +234,11 @@
 <p>否則，所有問題最後都會表現成「沒有產出」，使根因難以追蹤。</p>
 <h2>查核來源</h2>
 <ul>
-<li>Ollama API：Generate a chat message（<code>think</code>、<code>done_reason</code>、token 計數欄位）：<a href="https://docs.ollama.com/api/chat">https://docs.ollama.com/api/chat</a></li>
-<li>Ollama OpenAI compatibility（OpenAI 相容參數與 reasoning 支援）：<a href="https://docs.ollama.com/api/openai-compatibility">https://docs.ollama.com/api/openai-compatibility</a></li>
-<li>Ollama FAQ（context length 設定與 <code>ollama ps</code> 檢查方式）：<a href="https://docs.ollama.com/faq">https://docs.ollama.com/faq</a></li>
+<li><a href="https://docs.ollama.com/api/chat">Ollama API：Generate a chat message</a>（<code>think</code>、<code>done_reason</code>、token 計數欄位）</li>
+<li><a href="https://docs.ollama.com/api/openai-compatibility">Ollama OpenAI compatibility</a>（OpenAI 相容參數與推理控制）</li>
+<li><a href="https://docs.ollama.com/faq">Ollama FAQ</a> 與 <a href="https://docs.ollama.com/context-length">Context length</a>（Context 長度設定與 <code>ollama ps</code> 檢查方式）</li>
 <li>本機安裝版本：<code>nanobot-ai 0.3.0</code>、<code>ollama 0.30.6</code>（查核時以本機指令確認）</li>
-<li>本機 nanobot 原始碼：<code>nanobot/utils/helpers.py</code>（<code>strip_think()</code>）、<code>nanobot/providers/openai_compat_provider.py</code>（Qwen thinking 與 provider-specific 參數處理）、<code>nanobot/utils/runtime.py</code>（空 final answer fallback）</li>
+<li>本機 nanobot 原始碼：<code>nanobot/utils/helpers.py</code>（<code>strip_think()</code>）、<code>nanobot/providers/openai_compat_provider.py</code>（Qwen 與 Provider 專用參數處理）、<code>nanobot/utils/runtime.py</code>（fallback 文字）、<code>nanobot/agent/runner.py</code>（空回應重試、最終回答要求與 fallback 套用條件）</li>
 </ul>
 </article></main>
 <footer class="site-footer">

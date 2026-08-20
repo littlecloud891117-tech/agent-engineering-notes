@@ -1,12 +1,12 @@
 {
   "slug": "reasoning-token-trap",
-  "title": "推理模型的 Token 陷阱：為什麼「會思考」反而交不出答案",
-  "description": "工具全部成功，Agent 最後卻交出空回答？本文從推理 Token、輸出上限、Ollama 設定與原始回應逐步定位問題。",
+  "title": "推理模型的 token 陷阱：為什麼「會思考」反而交不出答案",
+  "description": "工具全部成功，agent 最後卻交出空回答？本文從推理 token、輸出上限、Ollama 設定與原始回應逐步定位問題。",
   "date_published": "2026-08-21",
-  "date_modified": "2026-08-20",
+  "date_modified": "2026-08-21",
   "author": "LittleCloud",
-  "tags": ["推理模型", "Token 預算", "AI Agent", "Ollama", "nanobot"],
+  "tags": ["推理模型", "token 預算", "AI agent", "Ollama", "nanobot"],
   "source_id": "2026-08-10-reasoning-token-trap",
-  "source_commit": "e83fcc452e550965be18d13414bb7b7b4389cb34",
-  "source_sha256": "1fbe356cb1611d88f131a388b54e28773e67cb4de681069ea52f38fb6ffc7315"
+  "source_commit": "ce140487f7b6dcb58d74e316670aac5a465585f4",
+  "source_sha256": "56e6381b91b8a276de355dedacd2b038af33db2cc20511f552d207c5e57a5af3"
 }
