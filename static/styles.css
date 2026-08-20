@@ -264,6 +264,7 @@ a:hover {
 .article-header h1,
 .page-hero h1 {
   font-size: clamp(2.35rem, 6vw, 4.6rem);
+  overflow-wrap: anywhere;
 }
 
 .article-dek,
@@ -286,6 +287,7 @@ a:hover {
   margin: 0 auto;
   padding: 1.5rem 0 6rem;
   font-size: 1.04rem;
+  overflow-wrap: break-word;
 }
 
 .prose h2,
@@ -398,10 +400,18 @@ a:hover {
   gap: 1rem;
 }
 
+@media (min-width: 761px) {
+  .hero h1 {
+    max-width: none;
+    font-size: clamp(3rem, 6vw, 5.4rem);
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 760px) {
   :root {
-    --shell: min(100% - 28px, 1120px);
-    --reading: min(100% - 28px, 760px);
+    --shell: calc(100% - 28px);
+    --reading: calc(100% - 28px);
   }
 
   .nav {
@@ -433,6 +443,16 @@ a:hover {
   .article-header,
   .page-hero {
     padding-top: 3.7rem;
+  }
+
+  .article-header h1,
+  .page-hero h1 {
+    font-size: clamp(2.05rem, 10vw, 2.75rem);
+  }
+
+  .prose pre,
+  .prose table {
+    max-width: calc(100vw - 28px);
   }
 
   .footer-inner {
