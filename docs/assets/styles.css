@@ -1,0 +1,447 @@
+:root {
+  color-scheme: light;
+  --paper: #f6f2e8;
+  --paper-deep: #ece5d6;
+  --ink: #17211f;
+  --muted: #5e6b66;
+  --line: #d4ccbb;
+  --accent: #006b5b;
+  --accent-dark: #004a3f;
+  --accent-soft: #d8ebe5;
+  --code: #12201d;
+  --code-ink: #e5f3ee;
+  --shadow: 0 20px 55px rgb(38 51 47 / 9%);
+  --shell: min(1120px, calc(100% - 40px));
+  --reading: min(760px, calc(100% - 40px));
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 85% 5%, rgb(0 107 91 / 10%), transparent 25rem),
+    var(--paper);
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  line-height: 1.75;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: var(--accent-dark);
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 0.08em;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: -5rem;
+  z-index: 20;
+  padding: 0.65rem 0.9rem;
+  color: white;
+  background: var(--accent-dark);
+  border-radius: 0.25rem;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.site-header {
+  border-bottom: 1px solid var(--line);
+  background: rgb(246 242 232 / 88%);
+  backdrop-filter: blur(12px);
+}
+
+.nav {
+  width: var(--shell);
+  min-height: 76px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--ink);
+  font-weight: 800;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+
+.brand-mark {
+  display: grid;
+  width: 2.3rem;
+  height: 2.3rem;
+  place-items: center;
+  color: white;
+  background: var(--accent-dark);
+  border-radius: 0.55rem 0.55rem 0.15rem 0.55rem;
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  font-size: 0.82rem;
+  box-shadow: 0 7px 18px rgb(0 74 63 / 18%);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.nav-links a {
+  color: var(--muted);
+  font-size: 0.94rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.nav-links a:hover {
+  color: var(--accent-dark);
+}
+
+.hero {
+  width: var(--shell);
+  margin: 0 auto;
+  padding: 7rem 0 5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(240px, 0.7fr);
+  align-items: end;
+  gap: 4rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.7rem;
+  color: var(--accent);
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero h1,
+.page-hero h1,
+.article-header h1 {
+  margin: 0;
+  font-family: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.hero h1 {
+  max-width: 12ch;
+  font-size: clamp(3rem, 8vw, 6.3rem);
+}
+
+.hero-note {
+  padding: 1.4rem 0 0.15rem 1.4rem;
+  border-left: 3px solid var(--accent);
+  color: var(--muted);
+  font-size: 1.02rem;
+}
+
+.hero-note p {
+  margin: 0;
+}
+
+.section {
+  width: var(--shell);
+  margin: 0 auto;
+  padding: 3.5rem 0 6rem;
+}
+
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.section-heading h2 {
+  margin: 0 0 0.8rem;
+  font-family: "Noto Serif TC", "Songti TC", serif;
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+}
+
+.article-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 1.2rem;
+}
+
+.article-card {
+  min-height: 310px;
+  padding: 1.7rem;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem 0.8rem 0.25rem 0.8rem;
+  background: rgb(255 253 247 / 75%);
+  box-shadow: var(--shadow);
+}
+
+.article-card time,
+.article-meta {
+  color: var(--muted);
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  font-size: 0.78rem;
+}
+
+.article-card h3 {
+  margin: 1rem 0 0.75rem;
+  font-family: "Noto Serif TC", "Songti TC", serif;
+  font-size: 1.55rem;
+  line-height: 1.35;
+}
+
+.article-card h3 a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.article-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.card-footer {
+  margin-top: auto;
+  padding-top: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.read-link {
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.tag-list {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  list-style: none;
+}
+
+.tag {
+  padding: 0.18rem 0.55rem;
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.article-header,
+.page-hero {
+  width: var(--reading);
+  margin: 0 auto;
+  padding: 5.7rem 0 2.6rem;
+}
+
+.article-header h1,
+.page-hero h1 {
+  font-size: clamp(2.35rem, 6vw, 4.6rem);
+}
+
+.article-dek,
+.page-intro {
+  max-width: 64ch;
+  margin: 1.5rem 0 0;
+  color: var(--muted);
+  font-size: 1.08rem;
+}
+
+.article-meta {
+  margin-top: 1.3rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+}
+
+.prose {
+  width: var(--reading);
+  margin: 0 auto;
+  padding: 1.5rem 0 6rem;
+  font-size: 1.04rem;
+}
+
+.prose h2,
+.prose h3 {
+  scroll-margin-top: 2rem;
+  font-family: "Noto Serif TC", "Songti TC", serif;
+  line-height: 1.35;
+}
+
+.prose h2 {
+  margin: 3.4rem 0 1rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+  font-size: clamp(1.65rem, 4vw, 2.3rem);
+}
+
+.prose h3 {
+  margin: 2.1rem 0 0.8rem;
+  font-size: 1.35rem;
+}
+
+.prose p,
+.prose ul,
+.prose ol,
+.prose table,
+.prose pre {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.prose li + li {
+  margin-top: 0.35rem;
+}
+
+.prose strong {
+  color: #0e1917;
+}
+
+.prose code {
+  padding: 0.12rem 0.32rem;
+  border: 1px solid #c9d7d2;
+  border-radius: 0.3rem;
+  background: #e5efeb;
+  font-family: ui-monospace, "Cascadia Code", "SFMono-Regular", monospace;
+  font-size: 0.89em;
+}
+
+.prose pre {
+  max-width: 100%;
+  padding: 1.2rem;
+  overflow-x: auto;
+  color: var(--code-ink);
+  background: var(--code);
+  border-radius: 0.65rem;
+  box-shadow: 0 12px 30px rgb(18 32 29 / 12%);
+}
+
+.prose pre code {
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+}
+
+.prose th,
+.prose td {
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.prose th {
+  background: var(--paper-deep);
+}
+
+.page-content {
+  width: var(--reading);
+  min-height: 48vh;
+  margin: 0 auto;
+  padding: 0 0 6rem;
+}
+
+.site-footer {
+  padding: 2.4rem 0;
+  color: var(--muted);
+  background: var(--paper-deep);
+  border-top: 1px solid var(--line);
+  font-size: 0.88rem;
+}
+
+.footer-inner {
+  width: var(--shell);
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --shell: min(100% - 28px, 1120px);
+    --reading: min(100% - 28px, 760px);
+  }
+
+  .nav {
+    min-height: 68px;
+  }
+
+  .brand-name {
+    display: none;
+  }
+
+  .nav-links {
+    gap: 0.8rem;
+  }
+
+  .hero {
+    padding: 4.5rem 0 3.2rem;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(3rem, 18vw, 5rem);
+  }
+
+  .hero-note {
+    max-width: 32rem;
+  }
+
+  .article-header,
+  .page-hero {
+    padding-top: 3.7rem;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
